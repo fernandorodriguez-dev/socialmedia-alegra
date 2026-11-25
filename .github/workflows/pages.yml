@@ -30,6 +30,8 @@ jobs:
         run: node -e "const c=require('./intake/public/config.json'); if(!c.team?.id) throw new Error('config.json sin team.id'); if(!c.assigneeRules?.length) throw new Error('config.json sin assigneeRules'); console.log('config.json OK:', c.assigneeRules.length, 'reglas');"
 
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
