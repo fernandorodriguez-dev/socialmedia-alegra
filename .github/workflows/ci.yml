@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Sintaxis de los módulos
+        run: |
+          for f in intake/core/*.js intake/adapters/node.js intake/adapters/netlify.js; do
+            node --check "$f" && echo "ok $f"
+          done
+
+      - name: config.json válido
+        run: |
+          node -e "
+            const c = require('./intake/public/config.json');
+            const emails = new Set(Object.keys(c.people));
+            if (!c.team || !c.team.id) throw new Error('falta team.id');
+            if (!c.assigneeRules || !c.assigneeRules.length) throw new Error('faltan assigneeRules');
+            if (!emails.has(c.defaultAssignee)) throw new Error('defaultAssignee no está en people');
+            for (const r of c.assigneeRules) {
+              if (!emails.has(r.email)) throw new Error('regla ' + r.id + ' apunta a ' + r.email + ', que no está en people');
+            }
+            console.log('config.json OK ·', c.assigneeRules.length, 'reglas ·', emails.size, 'personas');
+          "
+
+      - name: Que no haya secretos en el repo
+        run: |
+          if grep -rIl --exclude-dir=.git -E 'lin_api_[A-Za-z0-9]{10,}' .; then
+            echo "::error::Hay una API key de Linear en el repositorio"
+            exit 1
+          fi
+          echo "sin secretos"

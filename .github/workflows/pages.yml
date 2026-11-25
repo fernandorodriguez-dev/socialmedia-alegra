@@ -1,0 +1,39 @@
+name: Deploy intake form to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'intake/public/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validar configuración
+        run: node -e "const c=require('./intake/public/config.json'); if(!c.team?.id) throw new Error('config.json sin team.id'); if(!c.assigneeRules?.length) throw new Error('config.json sin assigneeRules'); console.log('config.json OK:', c.assigneeRules.length, 'reglas');"
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: intake/public
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
