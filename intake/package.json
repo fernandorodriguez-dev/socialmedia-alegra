@@ -1,0 +1,12 @@
+{
+  "name": "alegra-socialmedia-intake",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Formulario de intake de TMD Content & Multimedia hacia Linear",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "dev": "node adapters/node.js",
+    "start": "node adapters/node.js",
+    "deploy:worker": "wrangler deploy adapters/worker.js"
+  }
+}

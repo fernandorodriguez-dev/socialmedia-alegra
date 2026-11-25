@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TMD Content · Intake de solicitudes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" />
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --green:#00D6BC;--green-dark:#009E8A;--green-light:#E6FAF8;
+    --navy:#18283F;--navy-mid:#2C3E55;
+    --tp:#18283F;--ts:#5A6A7E;--tt:#8FA0B5;
+    --bg:#F4F6F9;--surface:#FFF;--bg2:#F0F3F7;
+    --border:#DDE3EC;--focus:#00D6BC;
+    --danger:#E53935;--danger-bg:#FFF0F0;--danger-border:#FFBCBC;
+    --success:#0F6E56;--success-bg:#E1F5EE;--success-border:#9FE1CB;
+    --warn:#B36000;--warn-bg:#FFF7E6;--warn-border:#FAC775;
+    --info:#185FA5;--info-bg:#E6F1FB;--info-border:#B5D4F4;
+    --r-sm:6px;--r-md:8px;--r-lg:12px;--r-xl:16px;
+    --sh-sm:0 1px 3px rgba(24,40,63,.08),0 1px 2px rgba(24,40,63,.04);
+    --sh-md:0 4px 16px rgba(24,40,63,.10),0 1px 4px rgba(24,40,63,.06);
+  }
+  html{font-size:15px}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--tp);min-height:100vh;padding:2rem 1rem 4rem;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .shell{max-width:760px;margin:0 auto}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem}
+  .brand-mark{width:32px;height:32px;background:var(--green);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center}
+  .brand-mark svg{width:18px;height:18px;fill:#fff}
+  .brand-name{font-size:13px;font-weight:600}
+  .brand-sep{color:var(--tt);font-size:13px}
+  .brand-sub{font-size:13px;color:var(--ts)}
+
+  .card{background:var(--surface);border-radius:var(--r-xl);box-shadow:var(--sh-md);overflow:hidden}
+  .card-head{padding:1.5rem 1.75rem;background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 100%);color:#fff}
+  .eyebrow{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--green);margin-bottom:5px}
+  .card-head h1{font-size:21px;font-weight:600;margin-bottom:5px}
+  .card-head p{font-size:13.5px;color:#C9D4E2;max-width:56ch}
+  .body{padding:1.5rem 1.75rem 2rem}
+
+  .sec{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ts);margin:1.9rem 0 .9rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+  .sec:first-child{margin-top:0}
+  .sec i{font-size:15px;color:var(--green-dark)}
+
+  .field{margin-bottom:1.05rem}
+  .field label{display:block;font-size:13px;font-weight:500;margin-bottom:5px}
+  .req{color:var(--danger)}
+  .opt{font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--tt);background:var(--bg2);padding:2px 6px;border-radius:4px;margin-left:4px;vertical-align:middle}
+  input[type=text],input[type=email],input[type=date],input[type=number],select,textarea{
+    width:100%;font-family:inherit;font-size:14px;color:var(--tp);background:var(--surface);
+    border:1px solid var(--border);border-radius:var(--r-md);padding:.6rem .75rem;transition:border-color .15s,box-shadow .15s
+  }
+  textarea{resize:vertical;min-height:76px}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--focus);box-shadow:0 0 0 3px rgba(0,214,188,.15)}
+  input.err,select.err,textarea.err{border-color:var(--danger);background:var(--danger-bg)}
+  .hint{font-size:12px;color:var(--ts);margin-top:5px;display:flex;gap:5px;align-items:flex-start}
+  .hint i{margin-top:2px;flex-shrink:0}
+  .fmsg{font-size:12px;color:var(--danger);margin-top:4px;display:none}
+  .fmsg.on{display:block}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.9rem}
+  @media(max-width:620px){.grid2,.grid3{grid-template-columns:1fr}}
+
+  .pills{display:flex;flex-wrap:wrap;gap:7px}
+  .pill{font-size:12.5px;font-weight:500;padding:.4rem .7rem;border:1px solid var(--border);border-radius:99px;background:var(--surface);cursor:pointer;user-select:none;transition:all .12s;display:flex;align-items:center;gap:5px}
+  .pill:hover{border-color:var(--green);color:var(--green-dark)}
+  .pill.on{background:var(--green-light);border-color:var(--green);color:var(--green-dark);font-weight:600}
+  .pill.on i{color:var(--green-dark)}
+
+  .note{display:none;font-size:12.5px;padding:.65rem .8rem;border-radius:var(--r-md);margin-top:.7rem;gap:7px;align-items:flex-start;border:1px solid transparent}
+  .note.on{display:flex}
+  .note i{margin-top:2px;flex-shrink:0}
+  .note.warn{background:var(--warn-bg);border-color:var(--warn-border);color:var(--warn)}
+  .note.info{background:var(--info-bg);border-color:var(--info-border);color:var(--info)}
+
+  .asset{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem .85rem;border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:.6rem;background:var(--bg2)}
+  .asset strong{font-size:13px;display:block}
+  .asset small{font-size:11.5px;color:var(--ts)}
+  .yn{display:flex;gap:5px;flex-shrink:0}
+  .yn button{font-family:inherit;font-size:12px;font-weight:500;padding:.3rem .75rem;border:1px solid var(--border);background:var(--surface);border-radius:var(--r-sm);cursor:pointer;color:var(--ts)}
+  .yn button.yes{background:var(--green-light);border-color:var(--green);color:var(--green-dark);font-weight:600}
+  .yn button.no{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger);font-weight:600}
+  .badge{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:2px 5px;border-radius:4px;margin-left:5px}
+  .badge.req-l{background:var(--danger-bg);color:var(--danger)}
+  .badge.cond{background:var(--warn-bg);color:var(--warn)}
+
+  .live{background:var(--navy);color:#fff;border-radius:var(--r-lg);padding:1rem 1.1rem;margin:1.6rem 0 0}
+  .live h4{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--green);margin-bottom:.6rem}
+  .live-row{display:flex;justify-content:space-between;gap:1rem;font-size:13px;padding:.28rem 0;border-bottom:1px solid rgba(255,255,255,.08)}
+  .live-row:last-child{border-bottom:none}
+  .live-row span:first-child{color:#9FB2C7}
+  .live-row span:last-child{text-align:right;font-weight:500}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end}
+  .chip{font-size:11px;background:rgba(0,214,188,.15);color:#7FE5D6;border:1px solid rgba(0,214,188,.3);border-radius:99px;padding:1px 8px}
+
+  .submit-area{margin-top:1.75rem;padding-top:1.4rem;border-top:1px solid var(--border)}
+  .vbox{display:none;background:var(--danger-bg);border:1px solid var(--danger-border);border-radius:var(--r-md);padding:.85rem 1rem;margin-bottom:1rem;font-size:13px;color:#A42725}
+  .vbox.on{display:block}
+  .vbox ul{margin:.4rem 0 0 1.1rem}
+  .vbox li{margin:.2rem 0}
+  button.go{width:100%;font-family:inherit;font-size:14.5px;font-weight:600;color:#fff;background:var(--green-dark);border:none;border-radius:var(--r-md);padding:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
+  button.go:hover:not(:disabled){background:#00806F}
+  button.go:disabled{opacity:.6;cursor:not-allowed}
+  .ok{display:none;margin-top:1rem;background:var(--success-bg);border:1px solid var(--success-border);border-radius:var(--r-lg);padding:1.1rem 1.2rem}
+  .ok.on{display:block}
+  .ok h3{font-size:14.5px;color:var(--success);display:flex;align-items:center;gap:7px;margin-bottom:.5rem}
+  .ok p{font-size:13px;color:#1C4A3E;margin-bottom:.4rem}
+  .ok a{color:var(--success);font-weight:600}
+  .ok .warns{background:#fff;border:1px solid var(--warn-border);border-radius:var(--r-sm);padding:.6rem .75rem;margin-top:.6rem;font-size:12.5px;color:var(--warn)}
+  .ok .warns ul{margin:.25rem 0 0 1.05rem}
+  .idb{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#fff;border:1px solid var(--success-border);border-radius:4px;padding:1px 5px}
+  details.map{margin-top:1rem;font-size:12.5px;color:var(--ts)}
+  details.map summary{cursor:pointer;font-weight:500;color:var(--ts)}
+  details.map table{width:100%;border-collapse:collapse;margin-top:.6rem;font-size:12px}
+  details.map td,details.map th{text-align:left;padding:.3rem .4rem;border-bottom:1px solid var(--border)}
+  details.map th{font-weight:600;color:var(--tp);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+  .foot{text-align:center;font-size:11.5px;color:var(--tt);margin-top:1.5rem}
+  .spin{animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="brand">
+    <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+    <span class="brand-name">Alegra</span><span class="brand-sep">/</span>
+    <span class="brand-sub">TMD Content &amp; Multimedia</span>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="eyebrow"><i class="ti ti-bolt"></i> Solicitud de producción</div>
+      <h1>Nueva pieza de contenido</h1>
+      <p>Al enviar se crea la tarea en Linear (<span id="team-key">TMDCTMD</span>) con responsable, labels y fecha ya configurados.</p>
+    </div>
+
+    <div class="body">
+
+      <!-- 1. QUIÉN PIDE -->
+      <div class="sec"><i class="ti ti-user"></i> Quién pide</div>
+      <div class="grid2">
+        <div class="field">
+          <label for="solicitante-nombre">Tu nombre <span class="req">*</span></label>
+          <input type="text" id="solicitante-nombre" placeholder="Ej. Fernando Rodríguez" autocomplete="name" />
+          <div class="fmsg" id="msg-solicitante-nombre"></div>
+        </div>
+        <div class="field">
+          <label for="solicitante-email">Tu correo Alegra <span class="req">*</span></label>
+          <input type="email" id="solicitante-email" placeholder="nombre.apellido@alegra.com" autocomplete="email" />
+          <div class="fmsg" id="msg-solicitante-email"></div>
+        </div>
+      </div>
+      <p class="hint"><i class="ti ti-at"></i> Con tu correo te menciono en el issue y te suscribo: te llegan las respuestas del equipo.</p>
+
+      <!-- 2. LA PIEZA -->
+      <div class="sec"><i class="ti ti-file-description"></i> La pieza</div>
+      <div class="field">
+        <label for="titulo">Título de la solicitud <span class="req">*</span></label>
+        <input type="text" id="titulo" maxlength="180" placeholder="Ej. Reel MCP launch — Colombia v1" />
+        <div class="fmsg" id="msg-titulo"></div>
+      </div>
+      <div class="field">
+        <label for="objetivo">Objetivo <span class="req">*</span></label>
+        <textarea id="objetivo" placeholder="¿Qué debe lograr esta pieza? ¿Qué acción o percepción esperas generar?"></textarea>
+        <div class="fmsg" id="msg-objetivo"></div>
+      </div>
+      <div class="field">
+        <label for="contexto">Contexto / brief <span class="req">*</span></label>
+        <textarea id="contexto" placeholder="Campaña, ángulo creativo, tono esperado, datos clave a comunicar..."></textarea>
+        <div class="fmsg" id="msg-contexto"></div>
+      </div>
+
+      <div class="grid3">
+        <div class="field">
+          <label for="formato">Formato <span class="req">*</span></label>
+          <select id="formato"></select>
+          <div class="fmsg" id="msg-formato"></div>
+        </div>
+        <div class="field">
+          <label for="duracion">Duración <span class="req">*</span></label>
+          <select id="duracion"></select>
+          <div class="fmsg" id="msg-duracion"></div>
+        </div>
+        <div class="field">
+          <label for="cantidad">Piezas <span class="req">*</span></label>
+          <input type="number" id="cantidad" value="1" min="1" max="50" />
+          <div class="fmsg" id="msg-cantidad"></div>
+        </div>
+      </div>
+
+      <!-- 3. CLASIFICACIÓN -->
+      <div class="sec"><i class="ti ti-tag"></i> Clasificación</div>
+      <div class="grid2">
+        <div class="field">
+          <label for="version">Versión <span class="req">*</span></label>
+          <select id="version">
+            <option value="">Selecciona versión...</option>
+            <option value="COL">COL — Colombia</option>
+            <option value="MEX">MEX — México</option>
+            <option value="DOM">DOM — República Dominicana</option>
+            <option value="CRI">CRI — Costa Rica</option>
+            <option value="4X4">Estrategia</option>
+            <option value="PAN">PAN — Panamá</option>
+            <option value="ESP">ESP — España</option>
+            <option value="ARG">ARG — Argentina</option>
+            <option value="PER">PER — Perú</option>
+            <option value="VEN">VEN — Venezuela</option>
+            <option value="USA">USA</option>
+            <option value="ALL">ALL — Todos los países</option>
+            <option value="OTHERS">OTHERS</option>
+          </select>
+          <div class="fmsg" id="msg-version"></div>
+        </div>
+        <div class="field">
+          <label for="canal">Canal <span class="req">*</span></label>
+          <select id="canal">
+            <option value="">Selecciona el canal...</option>
+            <option value="Social Media">Social Media (Reels)</option>
+            <option value="YouTube">YouTube</option>
+            <option value="Content HUB">Content HUB</option>
+            <option value="Academy">Academy</option>
+            <option value="Paid">Paid</option>
+            <option value="Landings">Landings</option>
+            <option value="PDC">PDC</option>
+            <option value="Apoyos">Apoyos</option>
+            <option value="Producto">Producto</option>
+          </select>
+          <div class="fmsg" id="msg-canal"></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="icp">ICP <span class="req">*</span></label>
+        <select id="icp">
+          <option value="">Selecciona el ICP...</option>
+          <option value="Empresa">Empresa</option>
+          <option value="Contador">Contador</option>
+          <option value="Pyme">Pyme</option>
+          <option value="All ICPs">All ICPs — Todos</option>
+        </select>
+        <div class="fmsg" id="msg-icp"></div>
+      </div>
+
+      <div class="field">
+        <label>Loops <span class="req">*</span></label>
+        <p class="hint" style="margin:-2px 0 10px"><i class="ti ti-info-circle"></i> Puedes elegir varios.</p>
+        <div class="pills" id="loops"></div>
+        <div class="note warn" id="product-note">
+          <i class="ti ti-alert-triangle"></i><span>Con <strong>Loop - Product</strong> las pantallas grabadas pasan a ser obligatorias.</span>
+        </div>
+        <div class="fmsg" id="msg-loops"></div>
+      </div>
+
+      <!-- 4. ENTREGA -->
+      <div class="sec"><i class="ti ti-calendar"></i> Entrega y responsables</div>
+      <div class="grid2">
+        <div class="field">
+          <label for="due-date">Fecha límite de edición <span class="req">*</span></label>
+          <input type="date" id="due-date" />
+          <div class="fmsg" id="msg-due-date"></div>
+        </div>
+        <div class="field">
+          <label for="aprobador">Aprobador final <span class="req">*</span></label>
+          <input type="text" id="aprobador" placeholder="Nombre de quien aprueba" />
+          <div class="fmsg" id="msg-aprobador"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="parent-issue">Issue madre <span class="opt">Opcional</span></label>
+        <input type="text" id="parent-issue" placeholder="TMDCTMD-123 o el link completo" />
+        <p class="hint"><i class="ti ti-git-branch"></i> Si la pieza es parte de una campaña o lanzamiento, la tarea se crea como sub-issue.</p>
+        <div class="fmsg" id="msg-parent-issue"></div>
+      </div>
+
+      <!-- 5. ASSETS -->
+      <div class="sec"><i class="ti ti-paperclip"></i> Assets</div>
+      <div class="note info on" id="paid-note">
+        <i class="ti ti-info-circle"></i><span>Con canal <strong>Paid</strong> el guión y la grabación no se piden aquí: se generan dos sub-issues para producirlos.</span>
+      </div>
+
+      <div class="field">
+        <label for="link-guion">Link del guión <span class="req" id="req-guion">*</span></label>
+        <input type="text" id="link-guion" placeholder="https://docs.google.com/..." />
+        <div class="fmsg" id="msg-link-guion"></div>
+      </div>
+      <div class="field">
+        <label for="link-grabacion">Link de la grabación <span class="req" id="req-grabacion">*</span></label>
+        <input type="text" id="link-grabacion" placeholder="https://drive.google.com/..." />
+        <div class="fmsg" id="msg-link-grabacion"></div>
+      </div>
+
+      <div class="asset">
+        <div>
+          <strong>Pantallas grabadas <span class="badge cond" id="pantallas-badge">Si Loop - Product</span></strong>
+          <small>Capturas o screen recordings del producto</small>
+        </div>
+        <div class="yn" data-asset="pantallas">
+          <button type="button" data-val="yes">Sí</button><button type="button" data-val="no">No</button>
+        </div>
+      </div>
+      <div class="field" id="wrap-pantallas" style="display:none">
+        <label for="link-pantallas">Link de pantallas grabadas <span class="req">*</span></label>
+        <input type="text" id="link-pantallas" placeholder="https://drive.google.com/..." />
+        <div class="fmsg" id="msg-link-pantallas"></div>
+      </div>
+
+      <div class="asset">
+        <div><strong>Referencias visuales <span class="badge cond">Opcional</span></strong><small>Moodboard, ejemplos, inspiración</small></div>
+        <div class="yn" data-asset="ref-vis">
+          <button type="button" data-val="yes">Sí</button><button type="button" data-val="no">No</button>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:.9rem">
+        <label for="referencias">Otros links / referencias</label>
+        <textarea id="referencias" placeholder="Piezas anteriores, brief en Notion, mockup en Figma... (uno por línea)"></textarea>
+      </div>
+
+      <!-- RESUMEN EN VIVO -->
+      <div class="live">
+        <h4><i class="ti ti-eye"></i> Así queda el issue</h4>
+        <div class="live-row"><span>Responsable</span><span id="live-assignee">—</span></div>
+        <div class="live-row"><span>Por qué</span><span id="live-why" style="color:#9FB2C7;font-weight:400">—</span></div>
+        <div class="live-row"><span>Fecha límite</span><span id="live-due">—</span></div>
+        <div class="live-row"><span>Labels</span><span class="chips" id="live-labels">—</span></div>
+        <div class="live-row" id="live-paid-row" style="display:none"><span>Sub-issues</span><span>Guión + Grabación</span></div>
+      </div>
+
+      <details class="map">
+        <summary><i class="ti ti-table"></i> Cómo se asigna el responsable</summary>
+        <table id="map-table"></table>
+      </details>
+
+      <div class="submit-area">
+        <div class="vbox" id="vbox"></div>
+        <button class="go" id="go"><i class="ti ti-send"></i> Crear issue en Linear</button>
+        <div class="ok" id="ok">
+          <h3><i class="ti ti-circle-check"></i> <span id="ok-title">Issue creado en Linear</span></h3>
+          <div id="ok-msg"></div>
+          <div class="warns" id="ok-warns" style="display:none"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="foot">Alegra · TMD Content &amp; Multimedia · Formulario de intake v2</div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var CFG = null;
+  var LOOPS = ['Loop - Brand', 'Loop - HQC', 'Loop - Events', 'Loop - Product', 'Loop Content HUB', 'Loop IE', 'Loop SAD'];
+  var selectedLoops = [];
+  var assetState = {};
+  var submitted = false;
+  var idemKey = null;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var val = function (id) { var e = $(id); return e ? String(e.value || '').trim() : ''; };
+
+  // ---------- idempotencia + borrador ----------
+  function newKey() {
+    return 'k' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+  function loadDraft() {
+    try {
+      var raw = localStorage.getItem('tmd-intake-draft');
+      if (!raw) return {};
+      return JSON.parse(raw) || {};
+    } catch (e) { return {}; }
+  }
+  function saveDraft() {
+    try {
+      localStorage.setItem('tmd-intake-draft', JSON.stringify({
+        solicitanteNombre: val('solicitante-nombre'),
+        solicitanteEmail: val('solicitante-email'),
+        titulo: val('titulo'), objetivo: val('objetivo'), contexto: val('contexto'),
+        formato: val('formato'), duracion: val('duracion'), cantidad: val('cantidad'),
+        version: val('version'), canal: val('canal'), icp: val('icp'),
+        dueDate: val('due-date'), aprobador: val('aprobador'),
+        loops: selectedLoops, links: links(), pantallas: assetState['pantallas'], refVis: assetState['ref-vis'],
+        referencias: val('referencias'), parentIssue: val('parent-issue')
+      }));
+    } catch (e) {}
+  }
+  function clearDraft() { try { localStorage.removeItem('tmd-intake-draft'); } catch (e) {} }
+
+  function links() {
+    return {
+      guion: val('link-guion'), grabacion: val('link-grabacion'),
+      pantallas: val('link-pantallas'), referencias: val('referencias')
+    };
+  }
+
+  // ---------- reglas ----------
+  function resolveAssignee(version, canal) {
+    for (var i = 0; i < CFG.assigneeRules.length; i++) {
+      var r = CFG.assigneeRules[i];
+      var okV = !r.versions || r.versions.indexOf(version) !== -1;
+      var okC = !r.canales || r.canales.indexOf(canal) !== -1;
+      if (okV && okC) return { email: r.email, why: r.why };
+    }
+    return { email: CFG.defaultAssignee, why: 'Sin dueño definido — va a Ashley' };
+  }
+  function personName(email) {
+    var p = CFG.people[email];
+    return p ? p.name : email;
+  }
+  function labelName(n) { return (CFG.labelAliases && CFG.labelAliases[n]) || n; }
+
+  // ---------- render ----------
+  function renderSelects() {
+    var f = $('formato');
+    f.innerHTML = '<option value="">Selecciona formato...</option>' +
+      CFG.formatos.map(function (x) { return '<option value="' + x + '">' + x + '</option>'; }).join('');
+    var d = $('duracion');
+    d.innerHTML = '<option value="">Selecciona duración...</option>' +
+      CFG.duraciones.map(function (x) { return '<option value="' + x + '">' + x + '</option>'; }).join('');
+    $('team-key').textContent = CFG.team.key;
+
+    $('loops').innerHTML = LOOPS.map(function (l) {
+      return '<div class="pill" data-loop="' + l + '"><i class="ti ti-square"></i>' + l + '</div>';
+    }).join('');
+    Array.prototype.forEach.call(document.querySelectorAll('.pill'), function (p) {
+      p.addEventListener('click', function () { toggleLoop(p); });
+    });
+
+    var rows = CFG.assigneeRules.map(function (r) {
+      return '<tr><td>' + ((r.versions || []).join('/') || 'Cualquier país') + '</td><td>' +
+        ((r.canales || []).join(' / ') || 'Cualquier canal') + '</td><td>' + personName(r.email) + '</td></tr>';
+    }).join('');
+    rows += '<tr><td colspan="2"><em>Cualquier otra combinación</em></td><td><strong>' + personName(CFG.defaultAssignee) + '</strong></td></tr>';
+    $('map-table').innerHTML = '<tr><th>Versión</th><th>Canal</th><th>Responsable</th></tr>' + rows;
+  }
+
+  function toggleLoop(el) {
+    var l = el.dataset.loop;
+    var i = selectedLoops.indexOf(l);
+    if (i >= 0) { selectedLoops.splice(i, 1); el.classList.remove('on'); el.innerHTML = '<i class="ti ti-square"></i>' + l; }
+    else { selectedLoops.push(l); el.classList.add('on'); el.innerHTML = '<i class="ti ti-check"></i>' + l; }
+
+    var isProduct = selectedLoops.indexOf('Loop - Product') !== -1;
+    $('product-note').classList.toggle('on', isProduct);
+    $('pantallas-badge').textContent = isProduct ? 'Obligatorio' : 'Si Loop - Product';
+    $('pantallas-badge').className = 'badge ' + (isProduct ? 'req-l' : 'cond');
+    if (!isProduct) {
+      assetState['pantallas'] = undefined;
+      $('wrap-pantallas').style.display = 'none';
+      $('link-pantallas').value = '';
+      Array.prototype.forEach.call(document.querySelectorAll('.yn[data-asset="pantallas"] button'), function (b) {
+        b.classList.remove('yes', 'no');
+      });
+    }
+    sync();
+  }
+
+  function sync() {
+    var version = val('version'), canal = val('canal');
+    var isPaid = canal === 'Paid';
+    var isProduct = selectedLoops.indexOf('Loop - Product') !== -1;
+
+    $('paid-note').classList.toggle('on', isPaid);
+    $('req-guion').style.display = isPaid ? 'none' : 'inline';
+    $('req-grabacion').style.display = isPaid ? 'none' : 'inline';
+    $('live-paid-row').style.display = isPaid ? 'flex' : 'none';
+
+    if (version || canal) {
+      var a = resolveAssignee(version, canal);
+      $('live-assignee').textContent = personName(a.email);
+      $('live-why').textContent = a.why;
+    } else {
+      $('live-assignee').textContent = personName(CFG.defaultAssignee) + ' (hasta elegir versión y canal)';
+      $('live-why').textContent = '—';
+    }
+
+    $('live-due').textContent = val('due-date') || '—';
+
+    var labels = selectedLoops.concat([canal, val('icp'), version]).filter(Boolean).map(labelName);
+    $('live-labels').innerHTML = labels.length
+      ? labels.map(function (l) { return '<span class="chip">' + l + '</span>'; }).join('')
+      : '—';
+
+    saveDraft();
+  }
+
+  // ---------- validación ----------
+  var URL_RE = /^https?:\/\/[^\s]+$/i;
+  var EMAIL_RE = /^[^\s@]+@alegra\.com$/i;
+
+  function errors() {
+    var e = {};
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+
+    if (!val('solicitante-nombre')) e['solicitante-nombre'] = 'Escribe tu nombre.';
+    var mail = val('solicitante-email');
+    if (!mail) e['solicitante-email'] = 'Escribe tu correo de Alegra.';
+    else if (!EMAIL_RE.test(mail)) e['solicitante-email'] = 'Debe ser un correo @alegra.com.';
+
+    if (!val('titulo')) e['titulo'] = 'Falta el título.';
+    if (!val('objetivo')) e['objetivo'] = 'Falta el objetivo.';
+    if (!val('contexto')) e['contexto'] = 'Falta el contexto.';
+    if (!val('formato')) e['formato'] = 'Elige el formato.';
+    if (!val('duracion')) e['duracion'] = 'Elige la duración.';
+    var c = Number(val('cantidad'));
+    if (!Number.isInteger(c) || c < 1 || c > 50) e['cantidad'] = 'Entre 1 y 50 piezas.';
+    if (!val('version')) e['version'] = 'Elige la versión.';
+    if (!val('canal')) e['canal'] = 'Elige el canal.';
+    if (!val('icp')) e['icp'] = 'Elige el ICP.';
+    if (selectedLoops.length === 0) e['loops'] = 'Elige al menos un Loop.';
+    if (!val('aprobador')) e['aprobador'] = 'Indica el aprobador.';
+
+    var due = val('due-date');
+    if (!due) e['due-date'] = 'Define la fecha límite.';
+    else if (new Date(due + 'T12:00:00') < today) e['due-date'] = 'Esa fecha ya pasó.';
+
+    var isPaid = val('canal') === 'Paid';
+    if (!isPaid && !val('link-guion')) e['link-guion'] = 'El guión es obligatorio.';
+    if (!isPaid && !val('link-grabacion')) e['link-grabacion'] = 'La grabación es obligatoria.';
+    if (val('link-guion') && !URL_RE.test(val('link-guion'))) e['link-guion'] = 'Debe ser un link que empiece por https://';
+    if (val('link-grabacion') && !URL_RE.test(val('link-grabacion'))) e['link-grabacion'] = 'Debe ser un link que empiece por https://';
+
+    if (selectedLoops.indexOf('Loop - Product') !== -1) {
+      if (!assetState['pantallas']) e['pantallas'] = 'Indica si hay pantallas grabadas.';
+      else if (assetState['pantallas'] === 'no') e['pantallas'] = 'Con Loop - Product son obligatorias.';
+      else if (!val('link-pantallas')) e['link-pantallas'] = 'Pega el link de las pantallas.';
+      else if (!URL_RE.test(val('link-pantallas'))) e['link-pantallas'] = 'Debe ser un link https://';
+    }
+
+    var p = val('parent-issue');
+    if (p && !/([A-Za-z]{2,}-\d+)/.test(p)) e['parent-issue'] = 'No reconocí el ID. Ej: TMDCTMD-123';
+
+    return e;
+  }
+
+  function paintErrors(e) {
+    Array.prototype.forEach.call(document.querySelectorAll('input,select,textarea'), function (el) {
+      el.classList.remove('err');
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.fmsg'), function (el) {
+      el.classList.remove('on'); el.textContent = '';
+    });
+    Object.keys(e).forEach(function (k) {
+      var f = $(k);
+      if (f && f.classList.contains('field') === false && f.tagName !== 'DIV') f.classList.add('err');
+      if (f && f.tagName === 'DIV' && !f.id.startsWith('msg-')) f.classList.add('err');
+      var m = $('msg-' + k);
+      if (m) { m.textContent = e[k]; m.classList.add('on'); }
+    });
+  }
+
+  function showErrors(e) {
+    paintErrors(e);
+    var keys = Object.keys(e);
+    var box = $('vbox');
+    if (!keys.length) { box.classList.remove('on'); return true; }
+    box.innerHTML = '<strong>Revisa ' + keys.length + ' campo' + (keys.length > 1 ? 's' : '') + ':</strong><ul>' +
+      keys.map(function (k) { return '<li>' + e[k] + '</li>'; }).join('') + '</ul>';
+    box.classList.add('on');
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return false;
+  }
+
+  // ---------- envío ----------
+  function payload() {
+    return {
+      idempotencyKey: idemKey,
+      solicitante: { nombre: val('solicitante-nombre'), email: val('solicitante-email') },
+      titulo: val('titulo'), objetivo: val('objetivo'), contexto: val('contexto'),
+      version: val('version'), canal: val('canal'), icp: val('icp'),
+      formato: val('formato'), duracion: val('duracion'), cantidad: Number(val('cantidad')),
+      dueDate: val('due-date'), aprobador: val('aprobador'),
+      loops: selectedLoops.slice(),
+      pantallasDisponibles: assetState['pantallas'] || null,
+      refVis: assetState['ref-vis'] || null,
+      links: links(),
+      parentIssue: val('parent-issue')
+    };
+  }
+
+  function go() {
+    if (submitted) return;
+    var e = errors();
+    if (!showErrors(e)) return;
+
+    var btn = $('go');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ti ti-loader-2 spin"></i> Creando issue en Linear...';
+    $('vbox').classList.remove('on');
+
+    fetch((CFG.apiBase || '') + '/api/create-issue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload())
+    })
+      .then(function (r) { return r.json().then(function (j) { return { status: r.status, j: j }; }); })
+      .then(function (res) {
+        var j = res.j;
+        if (res.status === 400 && j.errors) {
+          var map = {};
+          j.errors.forEach(function (x) { map[x.field] = x.message; });
+          throw { validation: true, map: map };
+        }
+        if (!j.success) throw new Error(j.error || 'No se pudo crear el issue.');
+        return j;
+      })
+      .then(function (j) {
+        submitted = true;
+        clearDraft();
+        var title = j.duplicate ? 'Este formulario ya se había enviado' : 'Issue creado en Linear';
+        $('ok-title').textContent = title;
+
+        var html = '';
+        if (j.duplicate) {
+          html += '<p>No se creó un issue nuevo para evitar el duplicado.</p>';
+        }
+        html += '<p><strong>' + esc(val('titulo')) + '</strong> — ' + esc(j.issueId) + '</p>';
+        html += '<p>Responsable: <strong>' + esc(j.assigneeName || personName(j.assigneeEmail)) + '</strong>' +
+          (j.assigneeReason ? ' <span style="color:#5B6B80">(' + esc(j.assigneeReason) + ')</span>' : '') + '</p>';
+        if (j.mentioned) html += '<p>Solicitante mencionado y suscrito al issue.</p>';
+        if (j.url) html += '<p><a href="' + esc(j.url) + '" target="_blank" rel="noopener">Abrir en Linear →</a></p>';
+        if (j.subIssues && j.subIssues.length) {
+          html += '<p>Sub-issues creados:<br>' + j.subIssues.map(function (s) {
+            return '<a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.identifier) + ' — ' + esc(s.title) + '</a> (vence ' + esc(s.dueDate) + ')';
+          }).join('<br>') + '</p>';
+        }
+        $('ok-msg').innerHTML = html;
+
+        var W = j.warnings || [];
+        if ((j.unmatchedLabels && j.unmatchedLabels.length) && W.length === 0) {
+          W.push('Labels sin aplicar: ' + j.unmatchedLabels.join(', '));
+        }
+        if (W.length) {
+          $('ok-warns').innerHTML = '<strong>Revisa esto:</strong><ul>' +
+            W.map(function (w) { return '<li>' + esc(w) + '</li>'; }).join('') + '</ul>';
+          $('ok-warns').style.display = 'block';
+        }
+        $('ok').classList.add('on');
+        btn.innerHTML = '<i class="ti ti-circle-check"></i> Issue creado';
+        btn.disabled = true;
+      })
+      .catch(function (err) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ti ti-send"></i> Crear issue en Linear';
+        if (err && err.validation) { showErrors(err.map); return; }
+        var box = $('vbox');
+        box.innerHTML = '<strong>No se pudo crear el issue:</strong> ' + esc(err.message || 'intenta de nuevo') +
+          '<br><small>Nada se creó en Linear. Tu texto sigue aquí.</small>';
+        box.classList.add('on');
+        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  // ---------- init ----------
+  fetch('config.json', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (cfg) {
+      CFG = cfg;
+      renderSelects();
+
+      var d = loadDraft();
+      if (d.solicitanteNombre) $('solicitante-nombre').value = d.solicitanteNombre;
+      if (d.solicitanteEmail) $('solicitante-email').value = d.solicitanteEmail;
+      ['titulo', 'objetivo', 'contexto', 'formato', 'duracion', 'version', 'canal', 'icp', 'aprobador', 'referencias', 'parent-issue'].forEach(function (k) {
+        if (d[k]) $(k).value = d[k];
+      });
+      if (d.cantidad) $('cantidad').value = d.cantidad;
+      if (d.dueDate) $('due-date').value = d.dueDate;
+      if (d.links) {
+        if (d.links.guion) $('link-guion').value = d.links.guion;
+        if (d.links.grabacion) $('link-grabacion').value = d.links.grabacion;
+        if (d.links.pantallas) $('link-pantallas').value = d.links.pantallas;
+      }
+      if (Array.isArray(d.loops)) {
+        d.loops.forEach(function (l) {
+          var el = document.querySelector('.pill[data-loop="' + l + '"]');
+          if (el && selectedLoops.indexOf(l) === -1) { selectedLoops.push(l); el.classList.add('on'); el.innerHTML = '<i class="ti ti-check"></i>' + l; }
+        });
+      }
+      if (d.pantallas) setYN('pantallas', d.pantallas);
+      if (d.refVis) setYN('ref-vis', d.refVis);
+
+      idemKey = newKey();
+
+      ['solicitante-nombre', 'solicitante-email', 'titulo', 'objetivo', 'contexto', 'formato', 'duracion',
+        'cantidad', 'version', 'canal', 'icp', 'due-date', 'aprobador', 'parent-issue',
+        'link-guion', 'link-grabacion', 'link-pantallas', 'referencias'].forEach(function (k) {
+        var el = $(k);
+        el.addEventListener('input', sync);
+        el.addEventListener('change', sync);
+      });
+
+      Array.prototype.forEach.call(document.querySelectorAll('.yn'), function (wrap) {
+        Array.prototype.forEach.call(wrap.querySelectorAll('button'), function (b) {
+          b.addEventListener('click', function () { setYN(wrap.dataset.asset, b.dataset.val); sync(); });
+        });
+      });
+
+      $('go').addEventListener('click', go);
+      sync();
+    })
+    .catch(function (e) {
+      $('vbox').innerHTML = '<strong>No pude cargar la configuración del formulario.</strong> Recarga la página. (' + esc(e.message) + ')';
+      $('vbox').classList.add('on');
+    });
+
+  function setYN(asset, v) {
+    assetState[asset] = v;
+    var wrap = document.querySelector('.yn[data-asset="' + asset + '"]');
+    if (!wrap) return;
+    Array.prototype.forEach.call(wrap.querySelectorAll('button'), function (b) {
+      b.classList.remove('yes', 'no');
+      if (b.dataset.val === v) b.classList.add(v === 'yes' ? 'yes' : 'no');
+    });
+    if (asset === 'pantallas') {
+      $('wrap-pantallas').style.display = v === 'yes' ? 'block' : 'none';
+      if (v === 'no') $('link-pantallas').value = '';
+    }
+  }
+})();
+</script>
+</body>
+</html>

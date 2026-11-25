@@ -1,0 +1,17 @@
+# secretos — nunca se suben
+.env
+.env.local
+.env.*.local
+.dev.vars
+
+# node
+node_modules/
+npm-debug.log*
+
+# wrangler / netlify
+.wrangler/
+.netlify/
+dist/
+
+# mac
+.DS_Store
