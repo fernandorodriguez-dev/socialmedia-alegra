@@ -123,16 +123,34 @@ function archivar(identifiers) {
 // ---------------------------------------------------------------- pruebas
 const creados = [];
 
-console.log('\n=== 1. Config del bot vs config del formulario web ===');
-try {
-  const web = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'intake', 'public', 'config.json'), 'utf8'));
-  check('mismas reglas de asignación', JSON.stringify(web.assigneeRules) === JSON.stringify(CONFIG.assigneeRules));
-  check('mismo equipo', web.team.id === CONFIG.team.id);
-  check('mismo responsable por defecto', web.defaultAssignee === CONFIG.defaultAssignee);
-  check('mismos alias de labels', JSON.stringify(web.labelAliases) === JSON.stringify(CONFIG.labelAliases));
-  check('mismas personas', Object.keys(web.people).sort().join() === Object.keys(CONFIG.people).sort().join());
-} catch (e) {
-  check('comparar con config web', false, e.message);
+console.log('\n=== 1. Configuración del bot ===');
+{
+  const emails = new Set(Object.keys(CONFIG.people));
+  check('el responsable por defecto existe en people', emails.has(CONFIG.defaultAssignee));
+  check('todas las reglas apuntan a personas conocidas',
+    CONFIG.assigneeRules.every(r => emails.has(r.email)));
+  check('las versiones de las reglas existen',
+    CONFIG.assigneeRules.every(r => !r.versions || r.versions.every(v => CONFIG.versiones.includes(v))));
+  check('los canales de las reglas existen',
+    CONFIG.assigneeRules.every(r => !r.canales || r.canales.every(c => CONFIG.canales.includes(c))));
+  check('los loops del formulario existen',
+    ['Loop - Brand', 'Loop - Product', 'Loop Content HUB'].every(l => CONFIG.loops.includes(l)));
+
+  const casos = [
+    ['COL', 'YouTube', 'pablo.munoz@alegra.com'],
+    ['MEX', 'YouTube', 'ashley.mondragon@alegra.com'],
+    ['COL', 'Social Media', 'darwing.lopez@alegra.com'],
+    ['MEX', 'Social Media', 'darwing.lopez@alegra.com'],
+    ['CRI', 'YouTube', 'katherine.rios@alegra.com'],
+    ['CRI', 'Social Media', 'katherine.rios@alegra.com'],
+    ['DOM', 'YouTube', 'katherine.rios@alegra.com'],
+    ['DOM', 'Social Media', 'katherine.rios@alegra.com'],
+    ['ESP', 'YouTube', 'ashley.mondragon@alegra.com'],
+  ];
+  casos.forEach(([v, ch, esperado]) => {
+    const got = Flow.resolveAssignee(CONFIG, v, ch);
+    check(`${v} · ${ch} → ${esperado.split('@')[0]}`, got.email === esperado, got.email);
+  });
 }
 
 console.log('\n=== 2. Conversación completa: COL · Social Media (debe ir a Darwing) ===');

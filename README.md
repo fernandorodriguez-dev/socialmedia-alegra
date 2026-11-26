@@ -4,49 +4,64 @@ Skills, playbooks y automatizaciones de IA para el equipo de Social Media de Ale
 
 | Carpeta | Qué es |
 |---|---|
-| `intake/` | Formulario web de solicitudes que crea issues en Linear (equipo `TMDCTMD`) |
-| `intake-chat/` | El mismo intake, pero conversando con un bot en Google Chat con `/video` |
+| `intake-chat/` | Bot de Google Chat (`/video`) que crea las solicitudes de video en Linear |
 
-## Formulario de intake
+## Bot de intake
 
-Formulario público para pedir piezas de video. Al enviar, crea el issue en Linear con
-responsable, labels, estado, fecha y solicitante mencionado.
+En la sala del equipo, cualquiera escribe **`/video`**. El bot pregunta dato por dato
+y al final crea el issue en Linear con responsable, labels, fecha y la persona mencionada.
 
-- Se publica en **GitHub Pages** desde `intake/public/` (workflow `pages.yml`).
-- La lógica y la `LINEAR_API_KEY` viven en un **Worker de Cloudflare**, no en el repo.
-- Reglas de asignación y formatos se editan en `intake/public/config.json`, sin tocar código.
-
-### Por qué hay un Worker
-
-GitHub Pages solo sirve archivos estáticos. Si la llamada a Linear saliera del navegador,
-la API key quedaría visible para cualquiera que abra el inspector. Por eso la página es
-estática y el POST va a un Worker que guarda la key como secret cifrado.
-
-El frontend no sabe dónde está la API: lee `apiBase` de `config.json`.
+No hay servidor, ni hosting, ni cuenta nueva: funciona dentro de Google, con Apps Script,
+y la llave de Linear se guarda en la configuración de Google, nunca en este repositorio.
 
 ```
-GitHub Pages (estático)          Cloudflare Worker (secret)
-intake/public/index.html  ──POST──▶  intake/adapters/worker.js
-        │                                    │
-        └── fetch config.json                └── api.linear.app/graphql
+Tú:  /video
+Bot: ¿Cómo se llama la pieza?
+…
+Bot: Revisa y confirma
+     • Versión: COL · Canal: Social Media
+     • Se asigna a: Darwing López (COL/MEX · Reels)
+     [Crear en Linear]  [Cancelar]
 ```
 
-### Puesta en marcha
+### Reglas de asignación
+
+Se evalúan en orden; gana la primera que coincide. Lo que no coincide va a Ashley.
+
+| Versión | Canal | Responsable |
+|---|---|---|
+| COL | YouTube | Pablo Muñoz |
+| MEX | YouTube | Ashley Mondragón |
+| COL / MEX | Social Media (Reels) | Darwing López |
+| CRI / DOM | YouTube y Social Media | Katherine Ríos |
+| cualquiera | Academy, Producto | Aura Fuentes |
+| cualquiera | PDC | Katherine Ríos |
+| resto | resto | Ashley Mondragón |
+
+Cambiar una regla es editar `intake-chat/core/config.js`. Nada más.
+
+### Probar sin desplegar
 
 ```bash
-cd intake
-cp .env.example .env       # pega tu LINEAR_API_KEY
-npm run dev                # http://localhost:8899
+cd intake-chat
+node test/simulate.js
 ```
 
-Para producción, ver `intake/README.md`.
+Corre la conversación completa contra Linear real, verifica que el issue quedó bien
+y lo archiva al terminar.
+
+### Instalar
+
+Ver [`intake-chat/README.md`](intake-chat/README.md).
 
 ### Documentación
 
-Wiki: [Formulario de intake → Linear (v2)](https://wiki.alegra.com/doc/formulario-de-intake-linear-v2-iGmglxYc1p)
+- Wiki: [Bot de intake en Google Chat](https://wiki.alegra.com/doc/bot-de-intake-en-google-chat-video-l3reg5FjPm)
+- Playbook del equipo: [TMD Content Multimedia](https://wiki.alegra.com/doc/tmd-content-multimedia-GMjqP9WGtt)
 
 ## Convenciones
 
-- Sin dependencias en el formulario: Node 18+ y nada más.
-- Ningún adaptador de hosting tiene lógica de negocio. La lógica está en `intake/core/`.
+- Sin dependencias: Node 18+ para probar, Apps Script para correr.
 - Los secretos nunca entran al repo (lo verifica `ci.yml` en cada push).
+- La lógica de la conversación vive en `core/flow.js`, separada del código de Google,
+  para poder probarla sin desplegar.
