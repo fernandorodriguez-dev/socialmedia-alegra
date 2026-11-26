@@ -308,6 +308,35 @@ console.log('\n=== 7. El comando es /video y solo /video ===');
   check('/pieza ya no arranca', Flow.isStart('/pieza') === false);
 }
 
+console.log('\n=== 8. Adivinar campos desde una descripción pegada ===');
+{
+  const hoy = '2026-11-26';
+  const p1 = Flow.parse(CONFIG, 'reel para colombia 30s brand pyme', hoy);
+  check('reel colombia 30s brand pyme → COL', p1.data.version === 'COL', p1.data.version);
+  check('canal Social Media', p1.data.canal === 'Social Media', p1.data.canal);
+  check('formato Reel 9:16', p1.data.formato === 'Reel 9:16', p1.data.formato);
+  check('duración 30s', p1.data.duracion === '30s', p1.data.duracion);
+  check('loop Brand', p1.loops.indexOf('Loop - Brand') !== -1, p1.loops.join());
+  check('ICP Pyme', p1.data.icp === 'Pyme', p1.data.icp);
+
+  const p2 = Flow.parse(CONFIG, 'video youtube mexico 60 segundos contadores', hoy);
+  check('mexico youtube 60s contador → MEX', p2.data.version === 'MEX', p2.data.version);
+  check('canal YouTube', p2.data.canal === 'YouTube', p2.data.canal);
+  check('formato 16:9', p2.data.formato === 'Video 16:9', p2.data.formato);
+  check('duración 60s', p2.data.duracion === '60s', p2.data.duracion);
+  check('ICP Contador', p2.data.icp === 'Contador', p2.data.icp);
+
+  const p3 = Flow.parse(CONFIG, '3 reels costa rica mañana', hoy);
+  check('costa rica → CRI', p3.data.version === 'CRI', p3.data.version);
+  check('cantidad 3', p3.data.cantidad === 3, p3.data.cantidad);
+  check('fecha mañana', p3.data.fecha === '2026-11-27', p3.data.fecha);
+
+  const sw = Flow.startWithText(CONFIG, 'reel colombia 30s brand pyme', { today: hoy });
+  check('arranca preguntando lo que falta (título)', sw.state.step === 'titulo', sw.state.step);
+  check('el resumen dice lo que entendió', sw.reply.text.indexOf('Entendí') !== -1, sw.reply.text.slice(0, 80));
+  check('prellenó versión', sw.state.data.version === 'COL');
+}
+
 console.log('\n=== Limpieza: archivando ' + creados.length + ' issues de prueba ===');
 archivar(creados);
 const quedan = gql('query{issues(first:10,filter:{title:{contains:"PRUEBA BOT"}}){nodes{identifier archivedAt}}}', {})

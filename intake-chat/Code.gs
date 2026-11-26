@@ -144,7 +144,10 @@ function alRecibirMensaje(event) {
 
     // arrancar
     if (IntakeFlow.isStart(texto)) {
-      var inicio = IntakeFlow.start(BOT_CONFIG);
+      var resto = String(texto.replace(/^\s*\/video\b/i, '')).trim();
+      var inicio = resto
+        ? IntakeFlow.startWithText(BOT_CONFIG, resto, { today: _hoy(), chatId: space, userId: email })
+        : IntakeFlow.start(BOT_CONFIG);
       inicio.state.startedAt = Date.now();
       _guardarEstado(space, email, inicio.state);
       return _tarjeta(inicio.reply);

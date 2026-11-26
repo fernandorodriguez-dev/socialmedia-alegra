@@ -293,6 +293,146 @@ var IntakeFlow = (function () {
     return { state: state, reply: state.step === 'resumen' ? buildSummary(config, state) : questionMessage(config, state) };
   }
 
+  /**
+   * Adivina los campos a partir de una descripción pegada tras /video.
+   * Devuelve { data, loops }. No rellena título, objetivo ni contexto:
+   * eso el bot lo pregunta siempre (son texto libre imposible de adivinar).
+   */
+  function parse(config, text, today) {
+    var data = {};
+    var loops = [];
+    var t = String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    var raw = String(text || '');
+
+    function has(re) { return re.test(t); }
+
+    // --- versión ---
+    var versiones = {
+      'colombia': 'COL', 'col': 'COL',
+      'mexico': 'MEX', 'mex': 'MEX',
+      'republica dominicana': 'DOM', 'rep dominicana': 'DOM', 'dominicana': 'DOM', 'dom': 'DOM',
+      'costa rica': 'CRI', 'cri': 'CRI',
+      'panama': 'PAN', 'espana': 'ESP', 'argentina': 'ARG', 'peru': 'PER', 'venezuela': 'VEN',
+    };
+    for (var k in versiones) if (t.indexOf(k) !== -1) data.version = versiones[k];
+    if (!data.version) {
+      var mc = raw.match(/\b(COL|MEX|DOM|CRI|PAN|ESP|ARG|PER|VEN|USA|ALL)\b/);
+      if (mc) data.version = mc[1];
+    }
+
+    // --- canal ---
+    if (has(/\breel|reels|vertical/)) data.canal = 'Social Media';
+    else if (has(/\byoutube|\byt\b|horizontal/)) data.canal = 'YouTube';
+    else if (has(/\bpaid|ads\b|publicidad/)) data.canal = 'Paid';
+    else if (has(/\bacademy/)) data.canal = 'Academy';
+    else if (has(/\blanding/)) data.canal = 'Landings';
+    else if (has(/\bcontent hub|contenthub/)) data.canal = 'Content HUB';
+    else if (has(/\bproducto\b/)) data.canal = 'Producto';
+    else if (has(/\bapoyos?\b/)) data.canal = 'Apoyos';
+    else if (has(/\bpdc\b/)) data.canal = 'PDC';
+
+    // --- formato ---
+    if (has(/\breel|9:16|vertical/)) data.formato = 'Reel 9:16';
+    else if (has(/\b16:9|horizontal|youtube/)) data.formato = 'Video 16:9';
+    else if (has(/\bcarrusel|4:5/)) data.formato = 'Carrusel 4:5';
+    else if (has(/\bstory/)) data.formato = 'Story 9:16';
+
+    // --- duración ---
+    var dseg = t.match(/(\d{1,2})\s*(s|seg|segundos)/);
+    if (dseg) data.duracion = dseg[1] + 's';
+    else if (has(/\b4 ?min/)) data.duracion = '4 min';
+    else if (has(/\b8\s*\+|\b8 ?min/)) data.duracion = '8+ min';
+    else if (has(/\b2 ?min|\+2/)) data.duracion = '+2 min';
+    else if (has(/\b1 ?min|60 ?s/)) data.duracion = '60s';
+    else if (has(/\b90 ?s|1 ?: ?30/)) data.duracion = '90s';
+    else if (has(/\b30 ?s/)) data.duracion = '30s';
+    else if (has(/\b45 ?s/)) data.duracion = '45s';
+
+    // --- cantidad ---
+    var c = t.match(/(\d{1,2})\s*(piezas?|videos?|reels?)/);
+    if (c) data.cantidad = Number(c[1]);
+
+    // --- loops ---
+    if (has(/\bbrand/)) loops.push('Loop - Brand');
+    if (has(/\bhqc/)) loops.push('Loop - HQC');
+    if (has(/\bevents?|eventos?/)) loops.push('Loop - Events');
+    if (has(/\bproduct/)) loops.push('Loop - Product');
+    if (has(/\bcontent ?hub/)) loops.push('Loop Content HUB');
+
+    // --- icp ---
+    if (has(/\bcontador|contadores/)) data.icp = 'Contador';
+    else if (has(/\bpyme|pymes/)) data.icp = 'Pyme';
+    else if (has(/\bempresa|empresas/)) data.icp = 'Empresa';
+
+    // --- fecha ---
+    if (has(/\bmanana/)) data.fecha = addDays(today, 1);
+    else {
+      var fen = t.match(/en\s+(\d{1,3})\s*dias?/);
+      if (fen) data.fecha = addDays(today, Number(fen[1]));
+      else {
+        var fplus = t.match(/\+(\d{1,3})/);
+        if (fplus) data.fecha = addDays(today, Number(fplus[1]));
+        else {
+          var fdm = raw.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b/);
+          if (fdm) {
+            var year = fdm[3] ? Number(fdm[3]) : Number(today.slice(0, 4));
+            if (year < 100) year += 2000;
+            data.fecha = year + '-' + pad(Number(fdm[2])) + '-' + pad(Number(fdm[1]));
+          } else {
+            var fiso = raw.match(/\b(\d{4}-\d{2}-\d{2})\b/);
+            if (fiso) data.fecha = fiso[1];
+          }
+        }
+      }
+    }
+
+    return { data: data, loops: loops };
+  }
+
+  function recognizedText(config, parsed) {
+    var d = parsed.data;
+    var partes = [];
+    if (d.version) partes.push(d.version);
+    if (d.canal) partes.push(d.canal);
+    if (d.formato) partes.push(d.formato);
+    if (d.duracion) partes.push(d.duracion);
+    if (d.cantidad) partes.push(d.cantidad + ' pieza(s)');
+    if (parsed.loops.length) partes.push(parsed.loops.join(' + '));
+    if (d.icp) partes.push('ICP ' + d.icp);
+    if (d.fecha) partes.push('entrega ' + d.fecha);
+    if (!partes.length) return '';
+    return 'Entendí: **' + partes.join(' · ') + '**. Si algo está mal, me lo corriges cuando lo pregunte.';
+  }
+
+  function firstMissing(config, state) {
+    var list = applicable(config, state);
+    for (var i = 0; i < list.length; i++) {
+      var s = list[i];
+      if (s.id === 'loops') { if (!state.loops.length) return s; continue; }
+      if (!state.data[s.id]) return s;
+    }
+    return null;
+  }
+
+  function startWithText(config, text, opts) {
+    opts = opts || {};
+    var today = opts.today || toISO(new Date());
+    var p = parse(config, text, today);
+    var state = { step: null, data: p.data, loops: p.loops, startedAt: Date.now() };
+    var missing = firstMissing(config, state);
+    state.step = missing ? missing.id : 'resumen';
+    var nota = recognizedText(config, p);
+
+    if (state.step === 'resumen') {
+      var r = buildSummary(config, state);
+      if (nota) r.text = nota + '\n\n' + r.text;
+      return { state: state, reply: r };
+    }
+    var q = questionMessage(config, state);
+    if (nota) q.text = nota + '\n\n' + q.text;
+    return { state: state, reply: q };
+  }
+
   function goBack(config, state) {
     var list = applicable(config, state);
     var idx = -1;
@@ -446,9 +586,11 @@ var IntakeFlow = (function () {
 
   var Flow = {
     start: start,
+    startWithText: startWithText,
     input: input,
     steps: steps,
     isStart: isStart,
+    parse: parse,
     resolveAssignee: resolveAssignee,
     personName: personName,
     labelName: labelName,
