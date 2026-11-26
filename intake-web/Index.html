@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intake TMD</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--g:#00D6BC;--gd:#009E8A;--navy:#18283F;--ts:#5A6A7E;--bg:#F4F6F9;--bd:#DDE3EC;--danger:#E53935;--ok:#0F6E56}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--navy);padding:24px 12px 48px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:640px;margin:0 auto}
+  .brand{display:flex;align-items:center;gap:9px;margin-bottom:18px;font-size:13px;color:var(--ts)}
+  .brand b{color:var(--navy)}
+  .card{background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(24,40,63,.10);overflow:hidden}
+  .head{background:linear-gradient(135deg,var(--navy) 0%,#2C3E55 100%);color:#fff;padding:20px 22px}
+  .head h1{font-size:19px;margin-bottom:4px}
+  .head p{font-size:13px;color:#C9D4E2}
+  .body{padding:18px 22px 24px}
+  .f{margin-bottom:14px}
+  label{display:block;font-size:13px;font-weight:500;margin-bottom:5px}
+  .req{color:var(--danger)}
+  input[type=text],input[type=email],input[type=date],input[type=number],select,textarea{
+    width:100%;font-family:inherit;font-size:14px;color:var(--navy);background:#fff;
+    border:1px solid var(--bd);border-radius:8px;padding:9px 11px
+  }
+  textarea{resize:vertical;min-height:70px}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px rgba(0,214,188,.15)}
+  .err{border-color:var(--danger)!important;background:#FFF0F0!important}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  @media(max-width:560px){.row2,.row3{grid-template-columns:1fr}}
+  .pills{display:flex;flex-wrap:wrap;gap:7px}
+  .pill{font-size:12.5px;padding:6px 11px;border:1px solid var(--bd);border-radius:99px;cursor:pointer;user-select:none}
+  .pill.on{background:#E6FAF8;border-color:var(--g);color:var(--gd);font-weight:600}
+  .hint{font-size:11.5px;color:var(--ts);margin-top:4px}
+  .sec{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ts);margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--bd)}
+  button.go{width:100%;font-family:inherit;font-size:14.5px;font-weight:600;color:#fff;background:var(--gd);border:none;border-radius:8px;padding:12px;cursor:pointer;margin-top:8px}
+  button.go:disabled{opacity:.55;cursor:wait}
+  .box{display:none;background:#FFF0F0;border:1px solid #FFBCBC;color:#A42725;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:13px}
+  .okp{display:none;background:#E1F5EE;border:1px solid #9FE1CB;color:#1C4A3E;border-radius:10px;padding:14px 16px;margin-top:14px;font-size:13.5px}
+  .okp a{color:var(--ok);font-weight:600}
+  .okp .warn{background:#fff;border:1px solid #FAC775;color:#B36000;border-radius:6px;padding:8px 10px;margin-top:8px;font-size:12.5px}
+  .spin{animation:s 1s linear infinite}@keyframes s{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><b>Alegra</b> / TMD Content &amp; Multimedia</div>
+
+  <div class="card">
+    <div class="head">
+      <h1>Nueva pieza de contenido</h1>
+      <p>Al enviar se crea la tarea en Linear con responsable, labels y fecha.</p>
+    </div>
+    <div class="body">
+
+      <div class="sec">Quién pide</div>
+      <div class="row2">
+        <div class="f"><label>Tu nombre <span class="req">*</span></label>
+          <input type="text" id="s-nombre" placeholder="Ej. Fernando Rodríguez"></div>
+        <div class="f"><label>Tu correo Alegra <span class="req">*</span></label>
+          <input type="email" id="s-email" placeholder="nombre@alegra.com"></div>
+      </div>
+
+      <div class="sec">La pieza</div>
+      <div class="f"><label>Título <span class="req">*</span></label>
+        <input type="text" id="titulo" maxlength="180" placeholder="Ej. Reel MCP launch — Colombia v1"></div>
+      <div class="f"><label>Objetivo <span class="req">*</span></label>
+        <textarea id="objetivo" placeholder="¿Qué debe lograr esta pieza?"></textarea></div>
+      <div class="f"><label>Contexto / brief <span class="req">*</span></label>
+        <textarea id="contexto" placeholder="Campaña, ángulo, tono, datos clave..."></textarea></div>
+
+      <div class="row3">
+        <div class="f"><label>Formato <span class="req">*</span></label>
+          <select id="formato"><option value="">…</option>
+            <option>Reel 9:16</option><option>Video 16:9</option><option>Short 9:16</option>
+            <option>Story 9:16</option><option>Carrusel 4:5</option><option>Cuadrado 1:1</option><option>Otro</option>
+          </select></div>
+        <div class="f"><label>Duración <span class="req">*</span></label>
+          <select id="duracion"><option value="">…</option>
+            <option>15s</option><option>30s</option><option>45s</option><option>60s</option>
+            <option>90s</option><option>+2 min</option><option>4 min</option><option>8+ min</option>
+          </select></div>
+        <div class="f"><label>Piezas <span class="req">*</span></label>
+          <input type="number" id="cantidad" value="1" min="1" max="50"></div>
+      </div>
+
+      <div class="sec">Clasificación</div>
+      <div class="row2">
+        <div class="f"><label>Versión <span class="req">*</span></label>
+          <select id="version"><option value="">…</option>
+            <option>COL</option><option>MEX</option><option>DOM</option><option>CRI</option>
+            <option>PAN</option><option>ESP</option><option>ARG</option><option>PER</option>
+            <option>VEN</option><option>USA</option><option>ALL</option><option>4X4</option><option>OTHERS</option>
+          </select></div>
+        <div class="f"><label>Canal <span class="req">*</span></label>
+          <select id="canal"><option value="">…</option>
+            <option>Social Media</option><option>YouTube</option><option>Content HUB</option>
+            <option>Academy</option><option>Paid</option><option>Landings</option>
+            <option>PDC</option><option>Apoyos</option><option>Producto</option>
+          </select></div>
+      </div>
+      <div class="f"><label>ICP <span class="req">*</span></label>
+        <select id="icp"><option value="">…</option>
+          <option>Empresa</option><option>Contador</option><option>Pyme</option><option>All ICPs</option>
+        </select></div>
+
+      <div class="f"><label>Loops <span class="req">*</span></label>
+        <div class="pills" id="loops"></div></div>
+
+      <div class="sec">Entrega</div>
+      <div class="row2">
+        <div class="f"><label>Fecha límite <span class="req">*</span></label>
+          <input type="date" id="fecha"></div>
+        <div class="f"><label>Aprobador final <span class="req">*</span></label>
+          <input type="text" id="aprobador" placeholder="Nombre"></div>
+      </div>
+      <div class="f"><label>Issue madre (opcional)</label>
+        <input type="text" id="madre" placeholder="TMDCTMD-123 o déjalo vacío"></div>
+
+      <div class="sec">Assets</div>
+      <div class="f"><label>Link del guión <span class="req" id="req-g">*</span></label>
+        <input type="text" id="guion" placeholder="https://docs.google.com/..."></div>
+      <div class="f"><label>Link de la grabación <span class="req" id="req-r">*</span></label>
+        <input type="text" id="grabacion" placeholder="https://drive.google.com/..."></div>
+      <div class="f" id="f-pant" style="display:none"><label>Link de pantallas grabadas <span class="req">*</span></label>
+        <input type="text" id="pantallas" placeholder="https://drive.google.com/..."></div>
+
+      <div class="box" id="box"></div>
+      <button class="go" id="go">Crear issue en Linear</button>
+      <div class="okp" id="okp"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var LOOPS = ['Loop - Brand','Loop - HQC','Loop - Events','Loop - Product','Loop Content HUB','Loop IE','Loop SAD'];
+  var selected = [];
+  var pills = document.getElementById('loops');
+  LOOPS.forEach(function(l){
+    var p = document.createElement('div');
+    p.className = 'pill'; p.textContent = l;
+    p.onclick = function(){ p.classList.toggle('on'); var i=selected.indexOf(l);
+      if(i<0) selected.push(l); else selected.splice(i,1); sync(); };
+    pills.appendChild(p);
+  });
+  function v(id){ return document.getElementById(id).value.trim(); }
+  function sync(){
+    var paid = v('canal') === 'Paid';
+    document.getElementById('req-g').style.display = paid?'none':'inline';
+    document.getElementById('req-r').style.display = paid?'none':'inline';
+    document.getElementById('f-pant').style.display = selected.indexOf('Loop - Product')>=0?'block':'none';
+  }
+  document.getElementById('canal').onchange = sync;
+
+  function fail(msg){ var b=document.getElementById('box'); b.textContent=msg; b.style.display='block'; }
+
+  document.getElementById('go').onclick = function(){
+    document.getElementById('box').style.display='none';
+    var url = /^https?:\/\/[^\s]+$/i, email = /^[^\s@]+@alegra\.com$/i, errores=[];
+
+    if(!v('s-nombre')) errores.push('Tu nombre');
+    if(!email.test(v('s-email'))) errores.push('Tu correo @alegra.com');
+    if(!v('titulo')) errores.push('Título');
+    if(!v('objetivo')) errores.push('Objetivo');
+    if(!v('contexto')) errores.push('Contexto');
+    if(!v('formato')) errores.push('Formato');
+    if(!v('duracion')) errores.push('Duración');
+    if(!v('version')) errores.push('Versión');
+    if(!v('canal')) errores.push('Canal');
+    if(!v('icp')) errores.push('ICP');
+    if(!selected.length) errores.push('Al menos un Loop');
+    if(!v('aprobador')) errores.push('Aprobador');
+    if(!v('fecha')) errores.push('Fecha límite'); else if(v('fecha') < new Date().toISOString().slice(0,10)) errores.push('Fecha límite vencida');
+
+    var paid = v('canal')==='Paid';
+    if(!paid && !url.test(v('guion'))) errores.push('Link del guión (https://)');
+    if(!paid && !url.test(v('grabacion'))) errores.push('Link de la grabación (https://)');
+    if(selected.indexOf('Loop - Product')>=0 && !url.test(v('pantallas'))) errores.push('Link de pantallas (obligatorio con Loop - Product)');
+
+    if(errores.length){ fail('Revisa: ' + errores.join(', ')); return; }
+
+    var payload = {
+      idempotencyKey: 'web-' + Date.now(),
+      solicitante: { nombre: v('s-nombre'), email: v('s-email').toLowerCase() },
+      titulo: v('titulo'), objetivo: v('objetivo'), contexto: v('contexto'),
+      version: v('version'), canal: v('canal'), icp: v('icp'),
+      formato: v('formato'), duracion: v('duracion'), cantidad: Number(v('cantidad')||1),
+      dueDate: v('fecha'), aprobador: v('aprobador'),
+      loops: selected.slice(),
+      pantallasDisponibles: selected.indexOf('Loop - Product')>=0 ? 'yes' : null,
+      refVis: null,
+      links: { guion: v('guion'), grabacion: v('grabacion'), pantallas: v('pantallas'), referencias: '' },
+      parentIssue: (v('madre').match(/([A-Za-z]{2,}-\d+)/)||['',''])[1].toUpperCase()
+    };
+
+    var btn = document.getElementById('go');
+    btn.disabled = true; btn.textContent = 'Creando…';
+
+    google.script.run
+      .withSuccessHandler(function(r){
+        var o = document.getElementById('okp');
+        if(!r || r.success === false){ fail('No se pudo crear: ' + (r && r.error)); btn.disabled=false; btn.textContent='Crear issue en Linear'; return; }
+        var h = '<b>✅ ' + r.identifier + '</b> creado en Linear<br>';
+        if(r.url) h += '<a href="'+r.url+'" target="_blank">Abrir en Linear →</a><br>';
+        if(r.assignee) h += 'Asignado a <b>'+(r.assignee.name||r.assignee.email)+'</b>';
+        if(r.assigneeNote) h += ' <span style="color:#5B6B80">('+r.assigneeNote+')</span>';
+        h += '<br>';
+        if(r.mentioned) h += 'Te mencionaron y suscribieron al issue.<br>';
+        if(r.subIssues && r.subIssues.length) h += 'Sub-issues: ' + r.subIssues.map(function(s){return s.identifier;}).join(', ') + '<br>';
+        if(r.warnings && r.warnings.length) h += '<div class="warn">'+r.warnings.map(function(w){return '• '+w;}).join('<br>')+'</div>';
+        o.innerHTML = h; o.style.display='block';
+        btn.textContent = 'Issue creado';
+      })
+      .withFailureHandler(function(err){ fail('Error: ' + err.message); btn.disabled=false; btn.textContent='Crear issue en Linear'; })
+      .crearIssue(payload);
+  };
+</script>
+</body>
+</html>
