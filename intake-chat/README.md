@@ -55,10 +55,10 @@ del bot no se haya desincronizado del formulario web.
 1. Entra a https://script.google.com y pulsa **Nuevo proyecto**.
 2. Ponle nombre: `Intake TMD`.
 3. Borra el contenido de `Código.gs` y pega el de `Code.gs`.
-4. Pulsa **+** al lado de *Archivos* → **Secuencia de comandos**, y crea tres
-   archivos con estos nombres exactos: `config`, `flow`, `linear-sync`.
-   Pega en cada uno el contenido del archivo correspondiente de `core/`.
-   (Se llaman sin `.js`: Apps Script les pone `.gs` solo.)
+4. Pulsa **+** al lado de *Archivos* → **Secuencia de comandos**, nombra el archivo
+   `libreria` y pega el contenido de `libreria.gs`. Ese archivo ya trae las tres
+   librerías juntas (`config`, `flow`, `linear-sync`) para no pegar tres veces.
+   Se regenera con `node scripts/build-libreria.js`.
 
 ### 2. Cargar el manifiesto
 

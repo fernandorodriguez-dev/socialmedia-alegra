@@ -294,4 +294,4 @@
 
   if (typeof module !== 'undefined' && module.exports) module.exports = LinearSync;
   root.IntakeLinear = LinearSync;
-})(this);
+})(typeof globalThis !== "undefined" ? globalThis : this);

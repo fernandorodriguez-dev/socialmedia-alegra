@@ -462,4 +462,4 @@
 
   if (typeof module !== 'undefined' && module.exports) module.exports = Flow;
   root.IntakeFlow = Flow;
-})(this);
+})(typeof globalThis !== "undefined" ? globalThis : this);

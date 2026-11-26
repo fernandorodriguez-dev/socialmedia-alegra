@@ -61,4 +61,4 @@
 
   if (typeof module !== 'undefined' && module.exports) module.exports = CONFIG;
   root.BOT_CONFIG = CONFIG;
-})(this);
+})(typeof globalThis !== "undefined" ? globalThis : this);
