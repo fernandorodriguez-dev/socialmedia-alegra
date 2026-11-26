@@ -1,7 +1,7 @@
 /**
  * Bot de intake de TMD Content & Multimedia para Google Chat.
  *
- * Flujo: alguien escribe /pieza → el bot pregunta dato por dato → al final
+ * Flujo: alguien escribe /video → el bot pregunta dato por dato → al final
  * crea el issue en Linear y responde en la sala con el enlace.
  *
  * Este archivo es solo el pegamento con Google Chat. La conversación vive en
