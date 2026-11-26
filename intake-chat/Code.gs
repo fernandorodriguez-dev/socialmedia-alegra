@@ -126,6 +126,14 @@ function _confirmacion(res) {
 
 // ------------------------------------------------------------------ eventos
 
+/**
+ * Google Chat invoca `onMessage` por defecto. Este alias evita tener que
+ * configurar disparadores a mano en la consola de Google Cloud.
+ */
+function onMessage(event) {
+  return alRecibirMensaje(event);
+}
+
 function alRecibirMensaje(event) {
   try {
     var space = event.space && event.space.name ? event.space.name : (event.space && event.space.displayName) || 'dm';
