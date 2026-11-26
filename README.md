@@ -4,7 +4,8 @@ Skills, playbooks y automatizaciones de IA para el equipo de Social Media de Ale
 
 | Carpeta | Qué es |
 |---|---|
-| `intake/` | Formulario de solicitudes de producción que crea issues en Linear (equipo `TMDCTMD`) |
+| `intake/` | Formulario web de solicitudes que crea issues en Linear (equipo `TMDCTMD`) |
+| `intake-chat/` | El mismo intake, pero conversando con un bot en Google Chat con `/video` |
 
 ## Formulario de intake
 
