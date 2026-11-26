@@ -13,7 +13,7 @@
  * Es la misma información que intake/public/config.json del formulario web.
  * El test (test/simulate.js) verifica que ambos no se desincronicen.
  */
-(function (root) {
+var BOT_CONFIG = (function () {
   'use strict';
 
   var CONFIG = {
@@ -67,10 +67,10 @@
       },
     ],
   };
+  return CONFIG;
+})();
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = CONFIG;
-  root.BOT_CONFIG = CONFIG;
-})(typeof globalThis !== "undefined" ? globalThis : this);
+if (typeof module !== 'undefined' && module.exports) module.exports = BOT_CONFIG;
 
 // ===== flow.js =====
 /**
@@ -80,7 +80,7 @@
  * la persona, y devuelve el siguiente mensaje. Así se puede probar entero sin
  * desplegar nada (ver test/simulate.js).
  */
-(function (root) {
+var IntakeFlow = (function () {
   'use strict';
 
   var URL_RE = /^https?:\/\/[^\s]+$/i;
@@ -534,10 +534,10 @@
     URL_RE: URL_RE,
     EMAIL_RE: EMAIL_RE,
   };
+  return Flow;
+})();
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = Flow;
-  root.IntakeFlow = Flow;
-})(typeof globalThis !== "undefined" ? globalThis : this);
+if (typeof module !== 'undefined' && module.exports) module.exports = IntakeFlow;
 
 // ===== linear-sync.js =====
 /**
@@ -549,7 +549,7 @@
  *   - En el test local: curl
  * Así el mismo código que corre en producción es el que se prueba.
  */
-(function (root) {
+var IntakeLinear = (function () {
   'use strict';
 
   var ENDPOINT = 'https://api.linear.app/graphql';
@@ -833,7 +833,7 @@
     usersByEmail: usersByEmail,
     buildDescription: buildDescription,
   };
+  return LinearSync;
+})();
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = LinearSync;
-  root.IntakeLinear = LinearSync;
-})(typeof globalThis !== "undefined" ? globalThis : this);
+if (typeof module !== 'undefined' && module.exports) module.exports = IntakeLinear;

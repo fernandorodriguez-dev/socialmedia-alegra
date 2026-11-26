@@ -163,6 +163,7 @@ function alRecibirMensaje(event) {
 
     if (out.reply.ready) {
       _guardarEstado(space, email, null);
+      IntakeLinear.setTransport(_transporteUrlFetch);
       var res = IntakeLinear.createIssue(BOT_CONFIG, out.reply.payload, _apiKey());
       return _confirmacion(res);
     }
@@ -204,6 +205,7 @@ function alTocarBoton(event) {
 
     if (out.reply.ready) {
       _guardarEstado(space, email, null);
+      IntakeLinear.setTransport(_transporteUrlFetch);
       var res = IntakeLinear.createIssue(BOT_CONFIG, out.reply.payload, _apiKey());
       return _confirmacion(res);
     }
@@ -229,5 +231,7 @@ function probarConexionLinear() {
   return 'ok';
 }
 
-// el transporte se conecta al cargar
-IntakeLinear.setTransport(_transporteUrlFetch);
+// Importante: NO ejecutar nada aquí arriba. Google evalúa los archivos en orden
+// alfabético y "Code.gs" va antes que "libreria.gs", así que cualquier uso de
+// IntakeFlow / IntakeLinear a nivel de archivo falla. El transporte se conecta
+// dentro de cada función (ver alRecibirMensaje, alTocarBoton y probarConexionLinear).

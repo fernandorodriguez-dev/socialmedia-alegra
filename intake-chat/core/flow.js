@@ -5,7 +5,7 @@
  * la persona, y devuelve el siguiente mensaje. Así se puede probar entero sin
  * desplegar nada (ver test/simulate.js).
  */
-(function (root) {
+var IntakeFlow = (function () {
   'use strict';
 
   var URL_RE = /^https?:\/\/[^\s]+$/i;
@@ -459,7 +459,7 @@
     URL_RE: URL_RE,
     EMAIL_RE: EMAIL_RE,
   };
+  return Flow;
+})();
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = Flow;
-  root.IntakeFlow = Flow;
-})(typeof globalThis !== "undefined" ? globalThis : this);
+if (typeof module !== 'undefined' && module.exports) module.exports = IntakeFlow;

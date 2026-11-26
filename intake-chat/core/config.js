@@ -4,7 +4,7 @@
  * Es la misma información que intake/public/config.json del formulario web.
  * El test (test/simulate.js) verifica que ambos no se desincronicen.
  */
-(function (root) {
+var BOT_CONFIG = (function () {
   'use strict';
 
   var CONFIG = {
@@ -58,7 +58,7 @@
       },
     ],
   };
+  return CONFIG;
+})();
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = CONFIG;
-  root.BOT_CONFIG = CONFIG;
-})(typeof globalThis !== "undefined" ? globalThis : this);
+if (typeof module !== 'undefined' && module.exports) module.exports = BOT_CONFIG;

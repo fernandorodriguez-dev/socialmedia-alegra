@@ -7,7 +7,7 @@
  *   - En el test local: curl
  * Así el mismo código que corre en producción es el que se prueba.
  */
-(function (root) {
+var IntakeLinear = (function () {
   'use strict';
 
   var ENDPOINT = 'https://api.linear.app/graphql';
@@ -291,7 +291,7 @@
     usersByEmail: usersByEmail,
     buildDescription: buildDescription,
   };
+  return LinearSync;
+})();
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = LinearSync;
-  root.IntakeLinear = LinearSync;
-})(typeof globalThis !== "undefined" ? globalThis : this);
+if (typeof module !== 'undefined' && module.exports) module.exports = IntakeLinear;
